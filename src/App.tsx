@@ -758,7 +758,7 @@ function App() {
             onClick={() => handleRentClick(car)}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-colors"
           >
-            View Details
+            Rent Now
           </button>
         </div>
       </div>
@@ -1020,9 +1020,9 @@ function App() {
             <div>
               <h3 className="text-xl font-bold mb-4">Contact Us</h3>
               <div className="space-y-2">
-                <p className="flex items-center"><Phone className="w-5 h-5 mr-2" /> +1 (555) 123-4567</p>
-                <p className="flex items-center"><Mail className="w-5 h-5 mr-2" /> info@carental.com</p>
-                <p className="flex items-center"><MapPin className="w-5 h-5 mr-2" /> 123 Rental Street, City</p>
+                <p className="flex items-center"><Phone className="w-5 h-5 mr-2" /> +55 11 99999-9999</p>
+                <p className="flex items-center"><Mail className="w-5 h-5 mr-2" /> admin@loucoporleilos.com</p>
+                <p className="flex items-center"><MapPin className="w-5 h-5 mr-2" /> Goiânia, Goiás Rua C-83</p>
               </div>
             </div>
             <div>
@@ -1031,6 +1031,7 @@ function App() {
               <p>Saturday: 9:00 AM - 6:00 PM</p>
               <p>Sunday: 10:00 AM - 4:00 PM</p>
             </div>
+            {/* 
             <div>
               <h3 className="text-xl font-bold mb-4">Quick Links</h3>
               <ul className="space-y-2">
@@ -1039,9 +1040,10 @@ function App() {
                 <li><a href="#" className="hover:text-blue-400">Privacy Policy</a></li>
               </ul>
             </div>
+            */}
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center">
-            <p>&copy; 2024 Car Rental. All rights reserved.</p>
+            <p>&copy; 2025 Loucoporleilos. All rights reserved.</p>
           </div>
         </div>
       </footer>
