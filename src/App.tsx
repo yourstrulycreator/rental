@@ -54,7 +54,7 @@ const carsData: CarOption[] = [
     salePrice: 44000.00,
     type: "hatch",
     transmission: "manual",
-    observations: "Capô e Para-lama LD repintado",
+    observations: "Hood and Right Fender Repainted",
     image: gol10mpi
   },
   {
@@ -68,7 +68,7 @@ const carsData: CarOption[] = [
     salePrice: 66500.00,
     type: "hatch",
     transmission: "manual",
-    observations: "Sem Retoque",
+    observations: "No Touch-ups",
     image: argo103c
   },
   {
@@ -82,7 +82,7 @@ const carsData: CarOption[] = [
     salePrice: 66000.00,
     type: "hatch",
     transmission: "manual",
-    observations: "Sem Retoque",
+    observations: "No Touch-ups",
     image: argo103c
   },
   {
@@ -264,7 +264,7 @@ const carsData: CarOption[] = [
     salePrice: 119990.00,
     type: "pickup",
     transmission: "automática",
-    observations: "No Touch-ups (Uso Severo)",
+    observations: "No Touch-ups (Heavy Usage)",
     image: l200
   },
   {
@@ -278,7 +278,7 @@ const carsData: CarOption[] = [
     salePrice: 119990.00,
     type: "pickup",
     transmission: "automática",
-    observations: "Portas e Para-lama LD repintados (Uso Severo)",
+    observations: "Portas e Para-lama LD repintados (Heavy Usage)",
     image: l200
   },
   {
@@ -292,7 +292,7 @@ const carsData: CarOption[] = [
     salePrice: 119990.00,
     type: "pickup",
     transmission: "automática",
-    observations: "No Touch-ups (Uso Severo)",
+    observations: "No Touch-ups (Heavy Usage)",
     image: l200
   },
   {
@@ -571,7 +571,11 @@ interface FormData {
   location: string;
   paymentMethod: string;
   message: string;
+  requestType: 'buy' | 'rent';
 }
+
+// Add this type if not already present
+type RequestType = 'buy' | 'rent';
 
 function App() {
   const [formData, setFormData] = useState<FormData>({
@@ -581,7 +585,8 @@ function App() {
     cpf: '',
     location: '',
     paymentMethod: '',
-    message: ''
+    message: '',
+    requestType: 'buy'
   });
 
   const [visibleCars, setVisibleCars] = useState<CarOption[]>([]);
@@ -589,6 +594,7 @@ function App() {
   const [hasMore, setHasMore] = useState(true);
   const [selectedCar, setSelectedCar] = useState<CarOption | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [requestType, setRequestType] = useState<RequestType>('buy');
 
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useCallback((node: HTMLDivElement | null) => {
@@ -642,9 +648,13 @@ function App() {
 
     try {
       const templateParams = {
+        request_type: formData.requestType.toUpperCase(), // 'BUY' or 'RENT'
         car_name: selectedCar.name,
         car_plate: selectedCar.plate,
         car_price: selectedCar.salePrice.toLocaleString('pt-BR'),
+        car_year: selectedCar.year,
+        car_color: selectedCar.color,
+        car_km: selectedCar.kilometers.toLocaleString('pt-BR'),
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -664,7 +674,7 @@ function App() {
       if (response.status === 200) {
         setDialogConfig({
           title: 'Message Sent!',
-          message: 'We will contact you soon.',
+          message: `Your ${formData.requestType} request has been sent successfully. We'll contact you soon.`,
           type: 'success'
         });
         setShowDialog(true);
@@ -676,14 +686,15 @@ function App() {
           cpf: '',
           location: '',
           paymentMethod: '',
-          message: ''
+          message: '',
+          requestType: 'buy'
         });
       }
     } catch (error) {
       console.error('Error sending email:', error);
       setDialogConfig({
         title: 'Error',
-        message: 'Unable to send your message. Please try again.',
+        message: 'Unable to send your request. Please try again.',
         type: 'error'
       });
       setShowDialog(true);
@@ -699,17 +710,39 @@ function App() {
     });
   };
 
-  const handleRentClick = (car: CarOption) => {
+  const handleRentClick = (car: CarOption, type: 'buy' | 'rent') => {
     setSelectedCar(car);
+    setRequestType(type);
     setShowBookingForm(true);
     setFormData(prev => ({
       ...prev,
-      carType: car.type
+      requestType: type,
+      name: '',
+      email: '',
+      phone: '',
+      cpf: '',
+      location: '',
+      paymentMethod: '',
+      message: ''
     }));
-    document.getElementById('booking')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const CarCard = ({ car }: { car: CarOption }) => {
+    const buttons = [
+      {
+        id: `rent-${car.id}`,
+        type: 'rent' as const,
+        label: 'Rent Now',
+        className: 'w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg font-semibold transition-colors'
+      },
+      {
+        id: `buy-${car.id}`,
+        type: 'buy' as const,
+        label: 'Buy Now',
+        className: 'w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-colors'
+      }
+    ];
+
     return (
       <div className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:scale-[1.02]">
         <div className="relative h-48">
@@ -754,12 +787,17 @@ function App() {
             </div>
           )}
           
-          <button
-            onClick={() => handleRentClick(car)}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-colors"
-          >
-            Rent Now
-          </button>
+          <div className="grid grid-cols-2 gap-4">
+            {buttons.map(button => (
+              <button
+                key={button.id}
+                onClick={() => handleRentClick(car, button.type as RequestType)}
+                className={button.className}
+              >
+                {button.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -796,6 +834,50 @@ function App() {
     </div>
   );
 
+  // In your form rendering section, make sure each field has a unique key
+  const formFields = [
+    {
+      id: 'name',
+      label: 'Full Name',
+      type: 'text',
+      name: 'name',
+      placeholder: 'Enter your full name',
+      required: true
+    },
+    {
+      id: 'email',
+      label: 'Email',
+      type: 'email',
+      name: 'email',
+      placeholder: 'your@email.com',
+      required: true
+    },
+    {
+      id: 'phone',
+      label: 'Phone/WhatsApp',
+      type: 'tel',
+      name: 'phone',
+      placeholder: '(00) 00000-0000',
+      required: true
+    },
+    {
+      id: 'cpf',
+      label: 'Tax ID (CPF)',
+      type: 'text',
+      name: 'cpf',
+      placeholder: '000.000.000-00',
+      required: true
+    },
+    {
+      id: 'location',
+      label: 'City/State',
+      type: 'text',
+      name: 'location',
+      placeholder: 'Enter your city and state',
+      required: true
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -808,7 +890,7 @@ function App() {
         <div className="absolute inset-0 bg-black/50">
           <div className="container mx-auto px-4 h-full flex items-center">
             <div className="text-white max-w-2xl">
-              <h1 className="text-5xl font-bold mb-6">Premium Car Rental Experience</h1>
+              <h1 className="text-5xl font-bold mb-6">Premium Car Purchase/Rental Experience</h1>
               <p className="text-xl mb-8">Drive your dreams with our luxury fleet. Competitive rates, flexible pickup, and exceptional service.</p>
               <a href="#cars" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors">
                 View Our Fleet
@@ -851,9 +933,9 @@ function App() {
       <div id="cars" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Our Premium Fleet</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {visibleCars.map((car) => (
-              <CarCard key={car.id} car={car} />
+              <CarCard key={`car-${car.id}`} car={car} />
             ))}
           </div>
           
@@ -878,137 +960,114 @@ function App() {
 
       {/* Booking Form */}
       {showBookingForm && selectedCar && (
-        <div id="booking" className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8">
-              <div className="mb-8">
-                <h2 className="text-3xl font-bold text-center">Request Information</h2>
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                  <h3 className="font-semibold text-lg mb-2">Veículo Selecionado:</h3>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-lg font-medium">{selectedCar.name}</p>
-                      <p className="text-gray-600">
-                        {selectedCar.type} • R$ {selectedCar.salePrice.toLocaleString('pt-BR')}
-                      </p>
-                    </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  {requestType === 'buy' ? 'Purchase Request' : 'Rental Request'}
+                </h2>
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                  <div className="flex items-start space-x-4">
                     <img 
                       src={selectedCar.image} 
                       alt={selectedCar.name}
-                      className="w-24 h-16 object-cover rounded-lg"
+                      className="w-24 h-24 object-cover rounded-lg"
                     />
+                    <div>
+                      <h3 className="font-semibold text-lg">{selectedCar.name}</h3>
+                      <p className="text-gray-600">{selectedCar.year} • {selectedCar.color}</p>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <Gauge className="w-4 h-4 mr-1" />
+                          {selectedCar.kilometers.toLocaleString('pt-BR')} km
+                        </div>
+                        <div className="flex items-center">
+                          <Car className="w-4 h-4 mr-1" />
+                          {selectedCar.transmission}
+                        </div>
+                      </div>
+                      <p className="mt-2 font-semibold text-blue-600">
+                        R$ {selectedCar.salePrice.toLocaleString('pt-BR')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      required
-                      placeholder="Enter your full name"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={formData.name}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      required
-                      placeholder="your@email.com"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={formData.email}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone/WhatsApp</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      placeholder="(00) 00000-0000"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={formData.phone}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID (CPF)</label>
-                    <input
-                      type="text"
-                      name="cpf"
-                      required
-                      placeholder="000.000.000-00"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={formData.cpf}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City/State</label>
-                    <input
-                      type="text"
-                      name="location"
-                      required
-                      placeholder="Enter your city and state"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={formData.location}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                    <select
-                      name="paymentMethod"
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={formData.paymentMethod}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select a payment method</option>
-                      <option value="cash">Cash</option>
-                      <option value="financing">Financing</option>
-                      <option value="consortium">Consortium</option>
-                      <option value="trade">Trade-in</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Additional Message</label>
-                  <textarea
-                    name="message"
-                    rows={4}
-                    placeholder="Type your message or questions about the vehicle..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={formData.message}
-                    onChange={handleChange}
-                  ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-lg text-lg font-semibold transition-colors flex items-center justify-center"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Sending...
-                    </>
-                  ) : (
-                    'Submit Request'
-                  )}
-                </button>
-                <p className="text-sm text-gray-500 text-center mt-4">
-                  Ao enviar, você concorda em receber contato sobre este veículo
-                </p>
-              </form>
+              <button
+                onClick={() => setShowBookingForm(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
+
+            {/* Form Content */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {formFields.map((field) => (
+                  <div key={`form-${field.id}`}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {field.label}
+                    </label>
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      required={field.required}
+                      placeholder={field.placeholder}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={formData[field.name as keyof FormData]}
+                      onChange={handleChange}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <select
+                  name="paymentMethod"
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.paymentMethod}
+                  onChange={handleChange}
+                >
+                  <option value="">Select a payment method</option>
+                  <option value="cash">Bank Transfer</option>
+                  <option value="financing">Financing</option>
+                  <option value="consortium">Installment Payment</option>
+                  <option value="trade">Trade-in</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Additional Message</label>
+                <textarea
+                  name="message"
+                  rows={4}
+                  placeholder="Type your message or questions about the vehicle..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={formData.message}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-lg text-lg font-semibold transition-colors flex items-center justify-center"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  'Submit Request'
+                )}
+              </button>
+              <p className="text-sm text-gray-500 text-center mt-4">
+                Ao enviar, você concorda em receber contato sobre este veículo
+              </p>
+            </form>
           </div>
         </div>
       )}
