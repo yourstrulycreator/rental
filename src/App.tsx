@@ -6,7 +6,7 @@ declare global {
 }
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Car, Calendar, Users, Mail, Phone, MapPin, Clock, Shield, ChevronLeft, ChevronRight, Fuel, Gauge, Users2, Check, X } from 'lucide-react';
+import { Car, Calendar, Users, Mail, Phone, MapPin, Clock, Shield, ChevronLeft, ChevronRight, Fuel, Gauge, Users2, Check, X, Globe } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 // Add these constants at the top of your file (you'll get these from EmailJS dashboard)
@@ -579,6 +579,28 @@ interface FormData {
 // Add this type if not already present
 type RequestType = 'buy' | 'rent';
 
+// Add this component
+const TranslateButton = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="fixed bottom-4 right-4 z-50">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
+        aria-label="Translate"
+      >
+        <Globe className="w-6 h-6" />
+      </button>
+      <div className={`absolute bottom-full right-0 mb-2 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="bg-white rounded-lg shadow-lg p-2">
+          <div id="google_translate_element"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -1133,6 +1155,8 @@ function App() {
           onClose={() => setShowDialog(false)}
         />
       )}
+
+      <TranslateButton />
     </div>
   );
 }
