@@ -26,6 +26,8 @@ import strada from '/src/assets/img/strada.jpg';
 import toro from '/src/assets/img/toro.jpg';
 import sprinter from '/src/assets/img/sprinter.jpg';
 import robust from '/src/assets/img/robust.jpg';
+import logo from '/src/assets/logo2.png';  // for header
+import footerLogo from '/src/assets/logo2.png';  // for footer
 
 interface CarOption {
   id: number;
@@ -880,7 +882,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Hero Section with Integrated Header */}
       <div 
         className="relative h-[600px] bg-cover bg-center"
         style={{
@@ -888,13 +890,25 @@ function App() {
         }}
       >
         <div className="absolute inset-0 bg-black/50">
-          <div className="container mx-auto px-4 h-full flex items-center">
-            <div className="text-white max-w-2xl">
-              <h1 className="text-5xl font-bold mb-6">Premium Car Purchase/Rental Experience</h1>
-              <p className="text-xl mb-8">Drive your dreams with our luxury fleet. Competitive rates, flexible pickup, and exceptional service.</p>
-              <a href="#cars" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors">
-                View Our Fleet
-              </a>
+          <div className="container mx-auto px-4 h-full">
+            {/* Logo in top-left corner */}
+            <div className="pt-4">
+              <img 
+                src={logo} 
+                alt="Company Logo" 
+                className="h-24 w-auto"
+              />
+            </div>
+            
+            {/* Hero content */}
+            <div className="h-[calc(100%-4rem)] flex items-center">
+              <div className="text-white max-w-2xl">
+                <h1 className="text-5xl font-bold mb-6">Premium Car Purchase/Rental Experience</h1>
+                <p className="text-xl mb-8">Drive your dreams with our luxury fleet. Competitive rates, flexible pickup, and exceptional service.</p>
+                <a href="#cars" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors">
+                  View Our Fleet
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1073,11 +1087,15 @@ function App() {
       )}
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-800 text-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">Contact Us</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1">
+              <img 
+                src={footerLogo} 
+                alt="Company Logo" 
+                className="h-24 w-auto mb-4"
+              />
               <div className="space-y-2">
                 <p className="flex items-center"><Phone className="w-5 h-5 mr-2" /> +55 11 99999-9999</p>
                 <p className="flex items-center"><Mail className="w-5 h-5 mr-2" /> admin@loucoporleilos.com</p>
