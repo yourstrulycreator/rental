@@ -6,7 +6,7 @@ declare global {
 }
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Car, Calendar, Users, Mail, Phone, MapPin, Clock, Shield, ChevronLeft, ChevronRight, Fuel, Gauge, Users2, Check, X, Globe } from 'lucide-react';
+import { Car, Calendar, Users, Mail, Phone, MapPin, Clock, Shield, ChevronLeft, ChevronRight, Fuel, Gauge, Users2, Check, X } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 // Add these constants at the top of your file (you'll get these from EmailJS dashboard)
@@ -579,28 +579,6 @@ interface FormData {
 // Add this type if not already present
 type RequestType = 'buy' | 'rent';
 
-// Add this component
-const TranslateButton = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 flex items-center justify-center"
-        aria-label="Translate"
-      >
-        <Globe className="w-6 h-6" />
-      </button>
-      <div className={`absolute bottom-full right-0 mb-2 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="bg-white rounded-lg shadow-lg p-2">
-          <div id="google_translate_element"></div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 function App() {
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -697,8 +675,8 @@ function App() {
 
       if (response.status === 200) {
         setDialogConfig({
-          title: 'Message Sent!',
-          message: `Your ${formData.requestType} request has been sent successfully. We'll contact you soon.`,
+          title: 'Mensagem Enviada!',
+          message: `Sua solicitação de ${formData.requestType === 'buy' ? 'compra' : 'aluguel'} foi enviada com sucesso. Entraremos em contato em breve.`,
           type: 'success'
         });
         setShowDialog(true);
@@ -717,8 +695,8 @@ function App() {
     } catch (error) {
       console.error('Error sending email:', error);
       setDialogConfig({
-        title: 'Error',
-        message: 'Unable to send your request. Please try again.',
+        title: 'Erro',
+        message: 'Não foi possível enviar sua solicitação. Por favor, tente novamente.',
         type: 'error'
       });
       setShowDialog(true);
@@ -756,13 +734,13 @@ function App() {
       {
         id: `rent-${car.id}`,
         type: 'rent' as const,
-        label: 'Rent Now',
+        label: 'Alugar Agora',
         className: 'w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg font-semibold transition-colors'
       },
       {
         id: `buy-${car.id}`,
         type: 'buy' as const,
-        label: 'Buy Now',
+        label: 'Comprar Agora',
         className: 'w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-colors'
       }
     ];
@@ -807,7 +785,19 @@ function App() {
           
           {car.observations && (
             <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">{car.observations}</p>
+              <p className="text-sm text-gray-600">
+                {car.observations.replace('No Touch-ups', 'Sem retoques')
+                  .replace('Hood', 'Capô')
+                  .replace('Right Fender', 'Para-lama Direito')
+                  .replace('Left Fender', 'Para-lama Esquerdo')
+                  .replace('Left Side', 'Lateral Esquerda')
+                  .replace('Repainted', 'Repintado')
+                  .replace('Not Working', 'Não Funcionando')
+                  .replace('Needs Repairs', 'Necessita Reparos')
+                  .replace('Some Touch-ups', 'Alguns retoques')
+                  .replace('Heavy Usage', 'Uso Intenso')
+                  .replace('conferir no vídeo', 'verificar no vídeo')}
+              </p>
             </div>
           )}
           
@@ -852,7 +842,7 @@ function App() {
           onClick={onClose}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-colors"
         >
-          Close
+          Fechar
         </button>
       </div>
     </div>
@@ -862,10 +852,10 @@ function App() {
   const formFields = [
     {
       id: 'name',
-      label: 'Full Name',
+      label: 'Nome Completo',
       type: 'text',
       name: 'name',
-      placeholder: 'Enter your full name',
+      placeholder: 'Digite seu nome completo',
       required: true
     },
     {
@@ -873,12 +863,12 @@ function App() {
       label: 'Email',
       type: 'email',
       name: 'email',
-      placeholder: 'your@email.com',
+      placeholder: 'seu@email.com',
       required: true
     },
     {
       id: 'phone',
-      label: 'Phone/WhatsApp',
+      label: 'Telefone/WhatsApp',
       type: 'tel',
       name: 'phone',
       placeholder: '(00) 00000-0000',
@@ -886,7 +876,7 @@ function App() {
     },
     {
       id: 'cpf',
-      label: 'Tax ID (CPF)',
+      label: 'CPF',
       type: 'text',
       name: 'cpf',
       placeholder: '000.000.000-00',
@@ -894,10 +884,10 @@ function App() {
     },
     {
       id: 'location',
-      label: 'City/State',
+      label: 'Cidade/Estado',
       type: 'text',
       name: 'location',
-      placeholder: 'Enter your city and state',
+      placeholder: 'Digite sua cidade e estado',
       required: true
     }
   ];
@@ -913,22 +903,25 @@ function App() {
       >
         <div className="absolute inset-0 bg-black/50">
           <div className="container mx-auto px-4 h-full">
-            {/* Logo in top-left corner */}
-            <div className="pt-4">
+            {/* Top bar with logo and translate */}
+            <div className="flex justify-between items-center pt-4">
+              {/* Logo in top-left corner */}
               <img 
                 src={logo} 
                 alt="Company Logo" 
                 className="h-24 w-auto"
               />
+              {/* Google Translate in top-right */}
+              <div id="google_translate_element" className="z-10"></div>
             </div>
             
             {/* Hero content */}
             <div className="h-[calc(100%-4rem)] flex items-center">
               <div className="text-white max-w-2xl">
-                <h1 className="text-5xl font-bold mb-6">Premium Car Purchase/Rental Experience</h1>
-                <p className="text-xl mb-8">Drive your dreams with our luxury fleet. Competitive rates, flexible pickup, and exceptional service.</p>
+                <h1 className="text-5xl font-bold mb-6">Experiência Premium de Compra/Aluguel de Carros</h1>
+                <p className="text-xl mb-8">Dirija seus sonhos com nossa frota de luxo. Preços competitivos, retirada flexível e serviço excepcional.</p>
                 <a href="#cars" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors">
-                  View Our Fleet
+                  Ver Nossa Frota
                 </a>
               </div>
             </div>
@@ -943,22 +936,22 @@ function App() {
             <div className="flex items-start space-x-4">
               <Clock className="w-8 h-8 text-blue-600 flex-shrink-0" />
               <div>
-                <h3 className="text-xl font-semibold mb-2">24/7 Support</h3>
-                <p className="text-gray-600">Round-the-clock assistance for your convenience</p>
+                <h3 className="text-xl font-semibold mb-2">Suporte 24/7</h3>
+                <p className="text-gray-600">Assistência 24 horas para sua conveniência</p>
               </div>
             </div>
             <div className="flex items-start space-x-4">
               <Shield className="w-8 h-8 text-blue-600 flex-shrink-0" />
               <div>
-                <h3 className="text-xl font-semibold mb-2">Fully Insured</h3>
-                <p className="text-gray-600">Comprehensive coverage for peace of mind</p>
+                <h3 className="text-xl font-semibold mb-2">Totalmente Segurado</h3>
+                <p className="text-gray-600">Cobertura completa para sua tranquilidade</p>
               </div>
             </div>
             <div className="flex items-start space-x-4">
               <MapPin className="w-8 h-8 text-blue-600 flex-shrink-0" />
               <div>
-                <h3 className="text-xl font-semibold mb-2">Flexible Pickup</h3>
-                <p className="text-gray-600">Multiple locations for your convenience</p>
+                <h3 className="text-xl font-semibold mb-2">Retirada Flexível</h3>
+                <p className="text-gray-600">Múltiplos locais para sua conveniência</p>
               </div>
             </div>
           </div>
@@ -968,7 +961,7 @@ function App() {
       {/* Car Grid */}
       <div id="cars" className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Our Premium Fleet</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Nossa Frota Premium</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {visibleCars.map((car) => (
               <CarCard key={`car-${car.id}`} car={car} />
@@ -986,7 +979,7 @@ function App() {
                 </div>
               ) : (
                 <div className="h-8">
-                  {/* Invisible element to trigger intersection observer */}
+                  {/* Elemento invisível para acionar o observador de interseção */}
                 </div>
               )}
             </div>
@@ -1002,7 +995,7 @@ function App() {
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-2xl font-bold mb-2">
-                  {requestType === 'buy' ? 'Purchase Request' : 'Rental Request'}
+                  {requestType === 'buy' ? 'Solicitação de Compra' : 'Solicitação de Aluguel'}
                 </h2>
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <div className="flex items-start space-x-4">
@@ -1068,19 +1061,19 @@ function App() {
                   value={formData.paymentMethod}
                   onChange={handleChange}
                 >
-                  <option value="">Select a payment method</option>
-                  <option value="cash">Bank Transfer</option>
-                  <option value="financing">Financing</option>
-                  <option value="consortium">Installment Payment</option>
-                  <option value="trade">Trade-in</option>
+                  <option value="">Selecione um método de pagamento</option>
+                  <option value="cash">Transferência Bancária</option>
+                  <option value="financing">Financiamento</option>
+                  <option value="consortium">Pagamento Parcelado</option>
+                  <option value="trade">Troca com Veículo</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Additional Message</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Mensagem Adicional</label>
                 <textarea
                   name="message"
                   rows={4}
-                  placeholder="Type your message or questions about the vehicle..."
+                  placeholder="Digite sua mensagem ou dúvidas sobre o veículo..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   value={formData.message}
                   onChange={handleChange}
@@ -1094,10 +1087,10 @@ function App() {
                 {isSubmitting ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Sending...
+                    Enviando...
                   </>
                 ) : (
-                  'Submit Request'
+                  'Enviar Solicitação'
                 )}
               </button>
               <p className="text-sm text-gray-500 text-center mt-4">
@@ -1125,10 +1118,10 @@ function App() {
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-bold mb-4">Business Hours</h3>
-              <p>Monday - Friday: 8:00 AM - 8:00 PM</p>
-              <p>Saturday: 9:00 AM - 6:00 PM</p>
-              <p>Sunday: 10:00 AM - 4:00 PM</p>
+              <h3 className="text-xl font-bold mb-4">Horário de Funcionamento</h3>
+              <p>Segunda - Sexta: 8:00 - 20:00</p>
+              <p>Sábado: 9:00 - 18:00</p>
+              <p>Domingo: 10:00 - 16:00</p>
             </div>
             {/* 
             <div>
@@ -1142,7 +1135,7 @@ function App() {
             */}
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center">
-            <p>&copy; 2025 Loucoporleilos. All rights reserved.</p>
+            <p>&copy; 2025 Loucoporleilos. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
@@ -1155,8 +1148,6 @@ function App() {
           onClose={() => setShowDialog(false)}
         />
       )}
-
-      <TranslateButton />
     </div>
   );
 }
